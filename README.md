@@ -4,7 +4,7 @@ Made for this printer on 2026-09-28: Simple AF with Kalico, Microprobe V2 plus l
 
 ## Import
 
-In OrcaSlicer: **File → Import → Import Configs…**, then choose `K1Max-Tuned-OrcaSlicer-profiles.zip`. You can also multi-select the `.json` files in `machine/`, `process/` and `filament/`. Restart Orca if the new printers don't appear.
+In OrcaSlicer: **File → Import → Import Configs…**, then choose the zip for your nozzle from `releases/` (`K1Max-Tuned-0.2mm-nozzle.zip` … `K1Max-Tuned-1.0mm-nozzle.zip`: that nozzle's printer, its processes and all filaments), or `K1Max-Tuned-OrcaSlicer-profiles.zip` for everything. You can also multi-select the `.json` files in `machine/`, `process/` and `filament/`. Restart Orca if the new printers don't appear.
 
 Then select the printer **K1 Max Tuned (0.4 nozzle)** (or the nozzle you have fitted). Only the processes and filaments that match that nozzle are shown.
 
