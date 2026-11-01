@@ -45,7 +45,7 @@ The bed is the full 300 × 300 mm, with no keep-out or excluded areas. If your p
 
 ## Speed tiers
 
-**59 profiles** (plus the three Speed Benchy ones below). Every layer height has **Balanced**, and the other two tiers exist only where they change the print (`tier_makes_sense()` in `make_profiles.py`).
+**59 profiles** (plus the three Speed Benchy and four Lithophane ones below). Every layer height has **Balanced**, and the other two tiers exist only where they change the print (`tier_makes_sense()` in `make_profiles.py`).
 
 | Tier | Where | What |
 |---|---|---|
@@ -69,6 +69,23 @@ For fun and bragging rights. Use them with the **`PLA Speed Benchy @K1 Max Tuned
 - **Filament:** fast PLA at 255 °C (250 °C first layer) and 32 mm³/s, which is the stock K1 hotend's rated maximum. All fans run at 100% from layer 2, and the minimum layer time is 1 s. Use a **high-speed PLA**; normal PLA won't melt that fast. If it under-extrudes, run Orca's max volumetric speed test and lower `vol` for this filament.
 - **Why the 0.4 can't reach 10 minutes:** its limit is path length, not melting. More flow and heat help little (25 → 35 mm³/s: 16:44 → 16:26 at 0.28 mm), and 600 vs 800 mm/s makes no difference because the curvy hull never reaches top speed. What helps is 0.32 mm layers with extra-wide 0.55 mm lines (fewer passes). 10 minutes on a 0.4 needs a high-flow hotend.
 - **Not counted:** the times are print time only. START_PRINT's soak, mesh and nozzle touch come on top, but they're short for a small print in the middle of a hot bed.
+
+## Lithophane
+
+Four processes for lithophanes (images whose thickness is the picture), sorted below the layer heights:
+
+| Profile | Orientation | Test panel 100 × 80 mm, PLA |
+|---|---|---|
+| `Lithophane 0.12mm @K1 Max Tuned 0.4` | upright | 1 h 49 min; a 150 × 144 mm panel: 4 h 36 min, 50 g |
+| `Lithophane Flat 0.08mm @K1 Max Tuned 0.4` | flat, image face on the bed | 1 h 27 min |
+| `Lithophane 0.08mm @K1 Max Tuned 0.2` | upright | 7 h 17 min |
+| `Lithophane Flat 0.06mm @K1 Max Tuned 0.2` | flat | 5 h 21 min |
+
+- **Upright is the usual way.** The nozzle draws the relief in XY and the layer height sets the vertical resolution. 6 Arachne walls, so a 0.8–3 mm plate is printed entirely as walls that follow the image (no infill lines show in the light). Outer-only 6 mm brim against tipping. Gentle: walls 60/80 mm/s, accelerations 2000–3000. The K1's bed doesn't move in XY, so a tall plate only feels the nozzle.
+- **Flat:** the relief is stepped in layers, so the layers are finer. 2 walls, 100% solid core (faster, a flat plate doesn't sway), no brim.
+- **All of them:** 100% infill, monotonic solid/top lines, seam at the back, no ironing. The 0.2-nozzle versions run at 60% of the speeds.
+- **Filament:** white PLA (`PLA @K1 Max Tuned`).
+- **A lamp base or frame on the same plate** would also be printed 100% solid. Print it separately with a normal profile, or give it its own infill in Orca's per-object settings.
 
 ## Why the settings are what they are
 

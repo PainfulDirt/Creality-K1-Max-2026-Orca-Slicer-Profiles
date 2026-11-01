@@ -153,10 +153,23 @@ user_host = {
     "printer_extruder_id": ["1"],
     "printer_extruder_variant": ["Direct Drive Standard"],
 }
+PACKAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       "K1Max-Tuned-OrcaSlicer-profiles.zip")
+
+def base_machine(n, parent):
+    """Creality's settings for the printer: from Orca's system presets, or,
+    since Orca packs them into .opc files (2026-10), from the machine
+    profile of the previous package, which already holds them resolved."""
+    if os.path.isdir(SYSTEM):
+        return resolved_machine(parent)
+    import zipfile
+    with zipfile.ZipFile(PACKAGE) as z:
+        return json.loads(z.read(printer_name(n) + ".json"))
+
 for n, p in NOZZLES.items():
     name = printer_name(n)
     write("machine", name, {
-        **resolved_machine(p["parent"]),
+        **base_machine(n, p["parent"]),
         "type": "machine",
         "name": name,
         "inherits": "",
@@ -352,6 +365,66 @@ for n, h in SPEED_BENCHY.items():
                   "internal_solid_infill_speed", "top_surface_speed", "gap_infill_speed"):
             base[k] = "800"
     write("process", name, base)
+
+# ---------------------------------------------------------------- lithophane
+# Lithophanes: solid plastic whose thickness is the image. Upright (the usual
+# way) the relief is drawn by the nozzle in XY and the layer height sets the
+# vertical resolution; flat, the relief is stepped in layers, so finer ones.
+# The K1's bed doesn't move in XY, so a tall thin plate only feels the nozzle:
+# gentle speeds, low accelerations, a brim against tipping.
+LITHOPHANE = {
+    # nozzle: upright layer, flat layer
+    0.4: (0.12, 0.08),
+    0.2: (0.08, 0.06),
+}
+for n, (upright, flat) in LITHOPHANE.items():
+    for kind, h in (("", upright), (" Flat", flat)):
+        base = json.load(open(os.path.join(OUT, "process",
+                          process_name(h, n) + ".json")))
+        name = f"Lithophane{kind} {h:.2f}mm @{BRAND} {n:.1f}"
+        sp = lambda v: str(round(v * (0.6 if n == 0.2 else 1)))
+        base.update({
+            "name": name, "print_settings_id": name,
+            # solid everywhere: no infill pattern may show through as light
+            "sparse_infill_density": "100%",
+            "internal_solid_infill_pattern": "monotonic",
+            "top_surface_pattern": "monotonic",
+            # Arachne varies the line width with the relief, so thin (bright)
+            # areas are filled without gaps or overlaps
+            "wall_generator": "arachne",
+            "gap_fill_target": "everywhere",
+            # seam on the frame, not across the image
+            "seam_position": "back",
+            "ironing_type": "no ironing",
+            "outer_wall_speed": sp(60), "inner_wall_speed": sp(80),
+            "sparse_infill_speed": sp(80), "internal_solid_infill_speed": sp(80),
+            "top_surface_speed": sp(60), "gap_infill_speed": sp(50),
+            "default_acceleration": "3000", "outer_wall_acceleration": "2000",
+            "inner_wall_acceleration": "3000", "top_surface_acceleration": "2000",
+            "travel_acceleration": "5000",
+        })
+        if kind == "":
+            base.update({
+                # every line is a wall following the image: 0.8-3 mm plates
+                # are walls only, infill just fills thick frames
+                "wall_loops": "6",
+                "top_shell_layers": "4", "bottom_shell_layers": "4",
+                "brim_type": "outer_only", "brim_width": "6",
+                "brim_object_gap": "0",
+            })
+        else:
+            base.update({
+                # the visible face lies on the bed; the relief's terraces are
+                # top surfaces everywhere
+                "wall_loops": "2",
+                "brim_type": "no_brim",
+                "top_shell_layers": "3", "bottom_shell_layers": "3",
+                "initial_layer_speed": "30", "initial_layer_infill_speed": "40",
+                # a flat plate doesn't sway: the hidden solid core can go faster
+                "inner_wall_speed": sp(100), "internal_solid_infill_speed": sp(150),
+                "default_acceleration": "5000",
+            })
+        write("process", name, base)
 
 all_printers = [printer_name(n) for n in NOZZLES]
 for mat, m in MATERIALS.items():
